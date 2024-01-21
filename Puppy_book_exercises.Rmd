@@ -1,0 +1,43 @@
+---
+title: "Puppy_book_exercises"
+author: "Julie Svinth Nielsen"
+date: "2024-01-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r - packages}
+library(rjags)
+
+
+```
+
+```{r - Exercise 23.1}
+
+mu = 3.5 # change as appropriate
+sigma = 2.0 # change as appropriate
+thresh = c( 1.5, 2.5, 3.5, 4.5, 5.5, 6.5 ) # change as appropriate
+
+pToThresh = pnorm( thresh , mu , sigma ) # This computes the cumulative normal probabilities for the original threshold values. This essentially represents the probabilities of observing values less than or equal to each threshold in the original scale.
+pToThresh = pnorm( (thresh-mu)/sigma , 0 , 1 ) #This line is an alternative way to calculate cumulative normal probabilities, but this time the thresholds are standardized to the standard normal distribution.
+#(thresh - mu) / sigma standardizes the original thresholds to have a mean of 0 and a standard deviation of 1.
+#pnorm(..., 0, 1) then calculates the cumulative probabilities for the standardized thresholds.
+#This alternative approach is often used when working with standardized values.
+
+
+c( pToThresh , 1 ) - c( 0 , pToThresh ) 
+# This line computes interval probabilities based on the cumulative normal probabilities calculated earlier.
+
+#c(pToThresh, 1) creates a vector with the cumulative probabilities and 1.
+
+#c(0, pToThresh) creates a vector with 0 and the cumulative probabilities.
+
+#Subtracting these two vectors element-wise gives the interval probabilities between each consecutive threshold.
+#The resulting vector represents the probability of falling into each interval defined by the thresholds.
+```
+

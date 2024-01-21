@@ -1,0 +1,185 @@
+---
+title: "Data_cleaning"
+author: "Julie Svinth Nielsen"
+date: "2024-01-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r - packages}
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(corrplot)
+```
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+```{r}
+df_2020 <- read.csv("2020_aus.csv", fileEncoding = "latin1")
+
+df_2021 <- read.csv("2021_aus.csv", fileEncoding = "latin1")
+
+```
+
+```{r}
+#Convert columns by index to factors
+columns_to_convert <- c(3:33, 42:73)  #
+
+
+df_2020[, columns_to_convert] <- lapply(df_2020[, columns_to_convert], factor)
+
+summary(df_2020)
+# Check for missing values
+#colSums(is.na(df_2020))
+
+# Example: Create a bar plot for Likert item 1
+ggplot(df_2020, aes(x = )) +
+  geom_bar() +
+  labs(title = "Distribution of Likert Item 1")
+
+# Example: Create a correlation plot
+corr_matrix <- cor(data[, c("likert_item_1", "likert_item_2", "likert_item_3")])
+corrplot(corr_matrix, method = "color")
+
+names(df_2020)
+
+
+new_column_names <- c("ID", 
+                      "year_born", 
+                      "gender",
+                      "industry",
+                      "industry_detailed",
+                      "current_occupation",
+                      "current_occupation_detaield",
+                      "organization_size",
+                      "do_you_manage_people",
+                      "household",
+                      "how_long_in_current_job",
+                      "metro_or_regional",
+                      "how_much_time_did_you_spend_remote_working_last_year",
+                      "last_year_org_encouraged_to_work_remotely",
+                      "last_year_org_wellprepared_for_me_workign_remotely",
+                      "last_year_common_for_people_in_org_to_work_remotely",
+                      "last_year_easy_to_get_permission_to_work_remotely",
+                      "last_year_easily_collaborate_with_collegues_when_working_remotely",
+                      "last_year_would_recommend_working_remotely_to_others",
+                      "last_year_how_much_time_would_you_have_preferred_to_work_remotely",
+                      "last_3_months_how_much_of_your_time_spend_working_remotely",
+                      "last_3_months_org_encouraged_to_work_remotely",
+                      "last_3_months_org_wellprepared_for_me_workign_remotely",
+                      "last_3_months_common_for_people_in_org_to_work_remotely",
+                      "last_3_months_easy_to_get_permission_to_work_remotely",
+                      "last_3_months_easily_collaborate_with_collegues_when_working_remotely",
+                      "last_3_months_would_recommend_working_remotely_to_others",
+                      "last_3_months_how_much_time_would_you_have_preferred_to_work_remotely",
+                      "post_covid_how_much_would_you_prefer_to_work_remotely",
+                      "post_covid_my_employer_would_encourage_remote_working",
+                      "post_covid_my_employer_would_make_changes_to_support_remote_working",
+                      "post_covid_I_would_have_more_choice_about_whether_to_work_remotely",
+                      "how_productive_are_you_each_hour_when_working_remotely",
+                      "workplace_how_many_hours_preparing_for_work_and_commuting",
+                      "workplace_how_many_hours_working",
+                      "workplace_how_many_hours_personal_and_family_time",
+                      "workplace_how_many_hours_caring_and_domestic_responsibilities",
+                      "remote_how_many_hours_preparing_for_work_and_commuting",
+                      "remote_how_many_hours_working",
+                      "remote_how_many_hours_personal_and_family_time",
+                      "remote_how_many_hours_caring_and_domestic_responsibilities",
+                      "most_significant_barrier_doing_work_remotely_1",
+                      "least_significant_barrier_doing_work_remotely_1",
+                        "most_significant_barrier_doing_work_remotely_2",
+                      "least_significant_barrier_doing_work_remotely_2",
+                        "most_significant_barrier_doing_work_remotely_3",
+                      "least_significant_barrier_doing_work_remotely_3",
+                       "most_significant_barrier_doing_work_remotely_4",
+                      "least_significant_barrier_doing_work_remotely_4",
+                       "most_significant_barrier_doing_work_remotely_5",
+                      "least_significant_barrier_doing_work_remotely_5",
+                       "most_significant_barrier_doing_work_remotely_6",
+                      "least_significant_barrier_doing_work_remotely_6",
+                        "most_significant_barrier_doing_work_remotely_7",
+                      "least_significant_barrier_doing_work_remotely_7",
+                        "most_significant_barrier_doing_work_remotely_8",
+                      "least_significant_barrier_doing_work_remotely_8",
+                       "most_significant_barrier_doing_work_remotely_9",
+                      "least_significant_barrier_doing_work_remotely_9",
+                       "most_significant_barrier_doing_work_remotely_10",
+                      "least_significant_barrier_doing_work_remotely_10",
+                      "best_aspect_of_remote_working_1",
+                      "worst_aspect_of_remote_working_1",
+                       "best_aspect_of_remote_working_2",
+                      "worst_aspect_of_remote_working_2",
+                      "best_aspect_of_remote_working_3",
+                      "worst_aspect_of_remote_working_3",
+                       "best_aspect_of_remote_working_4",
+                      "worst_aspect_of_remote_working_4",
+                      "best_aspect_of_remote_working_5",
+                      "worst_aspect_of_remote_working_5",
+                       "best_aspect_of_remote_working_6",
+                      "worst_aspect_of_remote_working_6"
+                      )
+
+# Rename all columns
+names(df_2020) <- new_column_names
+
+```
+
+```{r - assessing data}
+
+#  Last year
+ggplot(df_2020, aes(x = how_much_time_did_you_spend_remote_working_last_year, fill =  how_much_time_did_you_spend_remote_working_last_year)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of time spend working remote last year")
+
+ggplot(df_2020, aes(x = last_year_org_encouraged_to_work_remotely, fill =  last_year_org_encouraged_to_work_remotely )) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of org encouraging to work remotely")
+
+
+ggplot(df_2020, aes(x = last_year_org_wellprepared_for_me_workign_remotely, fill =  last_year_org_wellprepared_for_me_workign_remotely )) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of org being prepared for me working remotely")
+
+ggplot(df_2020, aes(x = last_year_common_for_people_in_org_to_work_remotely, fill =  last_year_common_for_people_in_org_to_work_remotely )) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of how common it was to work remotely in org")
+
+ggplot(df_2020, aes(x = last_year_easy_to_get_permission_to_work_remotely, fill =  last_year_easy_to_get_permission_to_work_remotely )) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of how easy it was to get permission to work remotely")
+
+ggplot(df_2020, aes(x = last_year_easily_collaborate_with_collegues_when_working_remotely, fill = last_year_easily_collaborate_with_collegues_when_working_remotely)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of how easy it was to collaborate when working remotely")
+
+ggplot(df_2020, aes(x = last_year_would_recommend_working_remotely_to_others, fill = last_year_would_recommend_working_remotely_to_others)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of recommending working remotely")
+
+
+ggplot(df_2020, aes(x = last_year_how_much_time_would_you_have_preferred_to_work_remotely, fill = last_year_how_much_time_would_you_have_preferred_to_work_remotely)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Distribution of how much to prefer working remotely")
+
+
+```
+
+```{r}
+#write.csv(df_2020, "C:/Users/julie/OneDrive/Dokumenter/Uni stuff/Kandidat/Speciale/Thesis/df_2020.csv", row.names=FALSE)
+```
+
