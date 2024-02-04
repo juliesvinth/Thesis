@@ -26,6 +26,7 @@ df_2020 <- read.csv("2020_aus.csv", fileEncoding = "latin1")
 
 df_2021 <- read.csv("2021_aus.csv", fileEncoding = "latin1")
 
+df_2021_new <- read.csv("df_2021_new.csv", fileEncoding = "latin1")
 ```
 
 ```{r}
@@ -131,6 +132,134 @@ names(df_2020) <- new_column_names
 
 ```
 
+```{r}
+# Rename all 2021 columns
+new_column_names_2021 <- c("ID", 
+                      "year_born", 
+                      "gender",
+                      "how_long_in_current_job",
+                      "industry",
+                      "current_occupation_detailed",
+                      "organization_size",
+                      "household",     #predictor                                    
+                      "metro_or_regional", 
+                      "how_much_time_did_you_spend_remote_working_last_year",
+                      "last_year_how_much_time_would_you_have_preferred_to_work_remotely",
+                      "this_year_how_much_time_did_you_spend_remote_working", 
+                      "this_year_how_much_time_would_you_have_preferred_to_work_remotely",
+                      "post_covid_how_much_would_you_prefer_to_work_remotely",
+                      "has_employer_changed_or_updated_remote_policy_since_covid",
+                      "last_six_months_part_of_day_remote_and_part_of_day_at_work",
+                      "how_often_do_you_work_this_way",
+                      "how_often_would_you_like_to_work_this_way",
+                      "policy_that_workers_must_be_at_workplace_some_of_the_time",
+                      "how_much_time_does_the_policy_require_you_to_be_at_work",
+                      "employer_policy_my_employers_remote_working_policy_suits_me",
+                      "employer_policy_I_get_to_choose_how_much_work_I_do_remotely", #predictor
+                      "employer_policy_I_choose_which_days_I_work_remotely",
+                      "employer_policy_my_manager_has_discretion_to_allow_or_deny_remote_work",
+                      "how_do_you_feel_about_your_employers_remote_working_policy",
+                      "last_6_months_org_encouraged_to_work_remotely",
+                      "last_6_months_org_wellprepared_for_me_working_remotely", # predictor
+                      "last_6_months_common_for_people_in_org_to_work_remotely",
+                      "last_6_months_easy_to_get_permission_to_work_remotely",
+                      "last_6_months_easily_collaborate_with_collegues_when_working_remotely", #predictor
+                      "last_6_months_working_remotely_reduced_my_chances_of_promotion",
+                      "last_6_months_i_take_more_regular_breaks_while_working_remotely", #predictor
+                      "do_you_think_remote_working_is_positive_or_negative_for_your_employer",
+                      "who_is_most_supportive_of_remote_working_in_org",
+                      "post_covid_my_employer_would_encourage_remote_working",
+                      "post_covid_my_employer_would_make_changes_to_support_remote_working",
+                      "post_covid_I_would_have_more_choice_about_whether_to_work_remotely",
+                      "workplace_how_many_hours_preparing_for_work_and_commuting",
+                      "workplace_how_many_hours_working",
+                      "workplace_how_many_hours_caring_and_domestic_responsibilities",
+                      "workplace_how_many_hours_personal_and_family_time",
+                      "work_place_how_many_hours_sleeping",
+                      "remote_how_many_hours_preparing_for_work_and_commuting", #predictor
+                      "remote_how_many_hours_working", #predictor
+                      "remote_how_many_hours_caring_and_domestic_responsibilities", #predictor
+                      "remote_how_many_hours_personal_and_family_time",#predictors
+                      "remote_how_many_hours_sleeping", #predictor
+                      "offer_to_work_remotely_whenever_in_return_for_pay_cut",
+                      "what_is_the_biggest_pay_cut_you_would_accept",
+                      "have_caring_responsibilities_improved_or_worsened_over_last_6_months", #predictor
+                      "have_connectivity(internet)_improved_or_worsened_over_last_6_months",
+                      "have_org_software_and_systems_improved_or_worsened_over_last_6_months",
+                      "have_difficulty_collaborating_remotely_improved_or_worsened_over_last_6_months", #predictor
+                      "have_poor_management_improved_or_worsened_over_last_6_months", #predictor
+                      "have_IT_equipment_improved_or_worsened_over_last_6_months",
+                      "have_feeling_left_out_or_isolated_improved_or_worsened_over_last_6_months",
+                      "have_extra_costs_improved_or_worsened_over_last_6_months",
+                      "have_cyber_security_improved_or_worsened_over_last_6_months",
+                      "have_tasks_that_could_not_been_done_remotely_improved_or_worsened_over_last_6_months", #predictor
+                      "have_workspace(chair_lignt_noise)_improved_or_worsened_over_last_6_months",
+                      "have_motivation_improved_or_worsened_over_last_6_months", #predictor
+                      "have_management_discourages_remote_working_improved_or_worsened_over_last_6_months",
+                      "have_living_situation(location_home_size_living_arrangements)_improved_or_worsened_over_last_6_months", #predictor
+                      "have_lack_of_remote_working_skills_improved_or_worsened_over_last_6_months", #predictor
+                      "have_health_and_safety_when_working_remotely_improved_or_worsened_over_last_6_months",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_1",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_1",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_2",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_2",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_3",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_3",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_4",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_4",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_5",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_5",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_6",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_6",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_7",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_7",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_8",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_8",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_9",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_9",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_10",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_10",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_11",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_11",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_12",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_12",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_13",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_13",
+                      "at_work_and_colleagues_working_remotely_biggest_barrier_14",
+                      "at_work_and_colleagues_working_remotely_smallest_barrier_14",
+                      "on_days_i_work_remotely_i_feel_better",
+                      "on_days_i_work_remotely_i_am_more_active",
+                      "i_feel_better_On_days_when_i_see_my_colleagues_in_person",
+                      "do_you_manage_people_in_your_position",
+                      "do_employees_you_manage_ever_work_remotely",
+                      "i_have_discretion_to_offer_or_deny_remote_work_to_people_i_manage",
+                      "offering_remote_work_helps_to_retain_my_employees",
+                      "ofering_remote_work_helps_to_recruit_employees",
+                      "my_team_works_well_together_when_they_work_remotely",
+                      "i_find_it_easy_to_manage_employees_remotely",
+                      "i_find_it_easy_to_manage_poor_performers_remotely",
+                      "i_feel_well_prepared_to_manage_employees_remotely",
+                      "managing_people_remotely_makes_me_more_focused_on_results",
+                      "i_find_it_easy_to_contact_employees_when_they_work_remote",
+                      "how_productive_are_you_each_hour_when_working_remotely", #outcome
+                      "how_productive_are_the_employees_you_manage_each_hour_when_they_work_remotely"
+                      
+                      )
+
+
+# Rename all columns
+names(df_2021) <- new_column_names_2021
+
+
+#Convert columns by index to factors
+columns_to_convert_2021 <- c(3:37, 48,50:109)  #
+
+
+df_2021_new[, columns_to_convert_2021] <- lapply(df_2021_new[, columns_to_convert_2021], factor)
+
+```
+
+
 ```{r - assessing data}
 
 #  Last year
@@ -181,5 +310,20 @@ ggplot(df_2020, aes(x = last_year_how_much_time_would_you_have_preferred_to_work
 
 ```{r}
 #write.csv(df_2020, "C:/Users/julie/OneDrive/Dokumenter/Uni stuff/Kandidat/Speciale/Thesis/df_2020.csv", row.names=FALSE)
+
+
+write.csv(df_2021, "C:/Users/julie/OneDrive/Dokumenter/Uni stuff/Kandidat/Speciale/Thesis/df_2021_new.csv", row.names=FALSE)
+```
+
+```{r}
+
+
+# Assuming your dataframe is named 'your_data'
+selected_columns <- data.frame(df_2021_new)[66:93]
+
+
+barriers <- summary(data.frame(selected_columns))
+
+
 ```
 
