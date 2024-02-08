@@ -371,6 +371,51 @@ correlation_result <- cor.test(
 
 print(correlation_result)
 
+
+# levels of policy I get to choose how much work I do remotely
+df_2021_new$employer_policy_I_get_to_choose_how_much_work_I_do_remotely <- ordered(df_2021_new$employer_policy_I_get_to_choose_how_much_work_I_do_remotely, levels = c(
+"Strongly disagree",
+"Somewhat disagree",
+"Neither agree nor disagree",
+"Somewhat agree",
+"Strongly agree"))
+
+
+# levels of policy I choose which days I work remotely
+df_2021_new$employer_policy_I_choose_which_days_I_work_remotely <- ordered(df_2021_new$employer_policy_I_choose_which_days_I_work_remotely, levels = c(
+"Strongly disagree",
+"Somewhat disagree",
+"Neither agree nor disagree",
+"Somewhat agree",
+"Strongly agree"))
+
+
+# levels of last 6 months easy to get permission to work remotely
+df_2021_new$last_6_months_easy_to_get_permission_to_work_remotely <- ordered(df_2021_new$last_6_months_easy_to_get_permission_to_work_remotely, levels = c(
+"Strongly disagree",
+"Somewhat disagree",
+"Neither agree nor disagree",
+"Somewhat agree",
+"Strongly agree"))
+
+
+# levels of my employers remote working policy suits me
+df_2021_new$employer_policy_my_employers_remote_working_policy_suits_me <- ordered(df_2021_new$employer_policy_my_employers_remote_working_policy_suits_me, levels = c(
+"Strongly disagree",
+"Somewhat disagree",
+"Neither agree nor disagree",
+"Somewhat agree",
+"Strongly agree"))
+
+
+# levels of how do you feel about your employers remote working policy
+df_2021_new$how_do_you_feel_about_your_employers_remote_working_policy <- ordered(df_2021_new$how_do_you_feel_about_your_employers_remote_working_policy, levels = c(
+"Strongly negative",
+"Somewhat negative",
+"Neither positive nor negative",
+"Somewhat positive",
+"Strongly positive"))
+
 ```
 
 The Spearman's rank correlation coefficient (rho) is approximately 0.167, suggesting a weak positive monotonic relationship between the time spent remote working and the perceived productivity during remote work. The p-value indicates that this correlation is statistically significant.
