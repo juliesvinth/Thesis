@@ -26,8 +26,14 @@ df_2020 <- read.csv("2020_aus.csv", fileEncoding = "latin1")
 
 df_2021 <- read.csv("2021_aus.csv", fileEncoding = "latin1")
 
-df_2021_new <- read.csv("df_2021_new.csv", fileEncoding = "latin1")
+df_2021_new <- read.csv("df_2021_new.csv", fileEncoding =  "latin1")
+
+# Remove apostrophy from column
+df_2021_new$how_productive_are_you_each_hour_when_working_remotely <- gsub("Â", "", as.factor(df_2021_new$how_productive_are_you_each_hour_when_working_remotely))
+
 ```
+
+
 
 ```{r}
 #Convert columns by index to factors
@@ -312,7 +318,7 @@ ggplot(df_2020, aes(x = last_year_how_much_time_would_you_have_preferred_to_work
 #write.csv(df_2020, "C:/Users/julie/OneDrive/Dokumenter/Uni stuff/Kandidat/Speciale/Thesis/df_2020.csv", row.names=FALSE)
 
 
-write.csv(df_2021, "C:/Users/julie/OneDrive/Dokumenter/Uni stuff/Kandidat/Speciale/Thesis/df_2021_new.csv", row.names=FALSE)
+#write.csv(df_2021, "C:/Users/julie/OneDrive/Dokumenter/Uni stuff/Kandidat/Speciale/Thesis/df_2021_new.csv", row.names=FALSE)
 ```
 
 ```{r}
@@ -324,6 +330,99 @@ selected_columns <- data.frame(df_2021_new)[66:93]
 
 barriers <- summary(data.frame(selected_columns))
 
+
+```
+```{r}
+
+# from columns 10 to 66 and 108
+
+# order likert levels - productivity outcome
+df_2021_new$how_productive_are_you_each_hour_when_working_remotely <- ordered(df_2021_new$how_productive_are_you_each_hour_when_working_remotely, levels = c(
+"Im 50% less productive when working remotely (or worse)", 
+"Im 40% less productive when working remotely", 
+"Im 30% less productive when working remotely", 
+"Im 20% less productive when working remotely", 
+"Im 10% less productive when working remotely", 
+"My productivity is about same when I work remotely", 
+"Im 10% more productive when working remotely", 
+"Im 20% more productive when working remotely", 
+"Im 30% more productive when working remotely", 
+"Im 40% more productive when working remotely", 
+"Im 50% more productive when working remotely (or more)"))
+
+
+# levels or remote work
+df_2021_new$this_year_how_much_time_did_you_spend_remote_working <- ordered(df_2021_new$this_year_how_much_time_did_you_spend_remote_working, levels = c(
+"Rarely or never",
+"Less than 10% of my time",
+"10%",
+"20%",
+"30%",
+"40%",
+"50% - I spent about half of my time remote working",
+"60%",
+"70%",
+"80%",
+"90%",
+"100% - I spent all of my time remote working"))
+
+correlation_result <- cor.test(
+  as.numeric(df_2021_new$this_year_how_much_time_did_you_spend_remote_working), as.numeric(df_2021_new$how_productive_are_you_each_hour_when_working_remotely), method = "spearman")
+
+print(correlation_result)
+
+```
+
+The Spearman's rank correlation coefficient (rho) is approximately 0.167, suggesting a weak positive monotonic relationship between the time spent remote working and the perceived productivity during remote work. The p-value indicates that this correlation is statistically significant.
+
+```{r}
+# Level of remote work
+remote_hist <- ggplot(df_2021_new, aes(x = this_year_how_much_time_did_you_spend_remote_working, fill = this_year_how_much_time_did_you_spend_remote_working)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Time_spent_remote_working")
+
+remote_hist
+
+
+# Productivity
+productivity_hist <- ggplot(df_2021_new, aes(x = how_productive_are_you_each_hour_when_working_remotely, fill = how_productive_are_you_each_hour_when_working_remotely)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Time_spent_remote_working")
+
+productivity_hist
+
+```
+
+```{r}
+
+# Count the number of people who chose differently
+different_responses_count <- sum(!is.na(df_2021_new$remote_how_many_hours_working) & 
+                                  !is.na(df_2021_new$workplace_how_many_hours_working) & 
+                                  df_2021_new$remote_how_many_hours_working != df_2021_new$workplace_how_many_hours_working)
+
+# Print the result
+print(paste("Number of people who chose differently:", different_responses_count))
+
+
+# Create a new variable for work hours difference
+df_2021_new$work_hours_difference <- NA
+
+# Assign values based on the comparison
+df_2021_new$work_hours_difference[df_2021_new$remote_how_many_hours_working > df_2021_new$workplace_how_many_hours_working] <- "Remote More"
+df_2021_new$work_hours_difference[df_2021_new$remote_how_many_hours_working < df_2021_new$workplace_how_many_hours_working] <- "Workplace More"
+df_2021_new$work_hours_difference[df_2021_new$remote_how_many_hours_working == df_2021_new$workplace_how_many_hours_working] <- "Equal"
+
+# Print the result
+print(df_2021_new)
+
+#How many works more at home, more at workplace or equally the same
+table(df_2021_new$work_hours_difference)
+
+m1 <- lm(remote_how_many_hours_working~workplace_how_many_hours_working, data = df_2021_new)
+
+summary(m1)
 
 ```
 
