@@ -1,0 +1,224 @@
+model {
+
+  #---- Define priors of Sobel test ----------------
+
+  # Intercepts for models
+  gamma_M1 ~ dnorm(0,1)
+  gamma_M2 ~ dnorm(0,1)
+  gamma_M3 ~ dnorm(0,1)
+  gamma_total ~ dnorm(0,1)
+  
+  # Coefficient - X -> M path
+  alpha_M1 ~ dnorm(0,1) 
+  alpha_M2 ~ dnorm(0,1)
+  alpha_M3 ~ dnorm(0,1)
+  
+  # Coefficient - M -> Y path
+  beta_M1 ~ dnorm(0,1)
+  beta_M2 ~ dnorm(0,1)
+  beta_M3 ~ dnorm(0,1)
+  
+  # Coefficient - Direct path
+  tau_prime ~ dnorm(0,1)
+  
+  #Sobel test - magnitude of indirect effect for mediators
+  psy_M1 <- alpha_M1 * beta_M1 
+  psy_M2 <- alpha_M2 * beta_M2 
+  psy_M3 <- alpha_M3 * beta_M3 
+  
+  #SD of mediators - (this will be doing the work of the error term "epsilon" in frequent frameworks)
+  sigma_M1 ~ dgamma(.001,.001)
+  sigma_M2 ~ dgamma(.001,.001)
+  sigma_M3 ~ dgamma(.001,.001)
+  sigma_Y ~ dgamma(.001,.001)
+
+  #--------------- WE HAVE FIXED THE Y VARIABLE - TRY THE REST!!!!!
+
+  #----------- Mediation models -----------------------
+  for (n in 1:nsubs) {
+    
+    # ------ Models for mediators  --------------------
+    mu_M1[n] <- gamma_M1 + (alpha_M1*X[n]) # model 2 in wiki for Sobel test
+    M1[n] ~ dnorm(mu_M1[n],sigma_M1) # this adds some noise to the MEASURE - measurement noise - sigma from above!!
+    
+    mu_M2[n] <- gamma_M2 + (alpha_M2*X[n])
+    M2[n] ~ dnorm(mu_M2[n],sigma_M2) # this adds some noise to the MEASURE - measurement noise - sigma from above!!
+  
+    mu_M3[n] <- gamma_M3 + (alpha_M3*X[n])
+    M3[n] ~ dnorm(mu_M3[n],sigma_M3) # this adds some noise to the MEASURE - measurement noise - sigma from above!!
+      
+    # ---------- Total model -----------
+    # Model 3 in wiki Sobel test
+    mu_Y[n] <- gamma_total + 
+      (tau_prime*X[n]) +
+      (beta_M1*M1[n]) + 
+      (beta_M2*M2[n]) +
+      (beta_M3*M3[n])    
+    Y[n] ~ dnorm(mu_Y[n],sigma_Y) # this adds some noise to the MEASURE - measurement noise - sigma from above!!
+    
+  }
+
+  #---------- simulate survey X --------------------------------------------------
+  #---------- CONSTRUCT IN % BUT DATA IN ORDINAL CATEGORIES 1-12 -----------------
+  sigma_theta_X <- 1
+
+  #-Special for response options-
+  # response can be anything from 0 to 100, in approximate intervals of %10
+  # here we will represent the data as proportions, and then have thresholds
+  # that match proportion intervals, rather than a Likert scale
+  mu_theta_X <- c(.05,.15,.25,.35,.45,.55,.65,.75,.85,.95)
+  
+  for (s in 1:nsubs) {
+    
+    for (q in 1:nq_X) { 
+      
+      # simulate thresholds/cutoffs for responses
+      for (t in 1:(nr_X-1)) { # define one fewer threshold than n questions  
+        # find thresholds on response scale
+        theta_X[s,q,t] ~ dnorm(mu_theta_X[t],sigma_theta_X) #note we have the mu from above 
+      }
+      
+      # generate probabilities for response categories from thresholded model
+      # See Kruschke Chapter 21 for model
+      # mean is underlying construct from mvnorm simulation above - i.e X
+      p_X[s,q,1] <- phi((theta_X[s,q,1]-X[s])/sigma_theta_X)
+      p_X[s,q,2] <- phi((theta_X[s,q,2]-X[s])/sigma_theta_X)-phi((theta_X[s,q,1]-X[s])/sigma_theta_X)
+      p_X[s,q,3] <- phi((theta_X[s,q,3]-X[s])/sigma_theta_X)-phi((theta_X[s,q,2]-X[s])/sigma_theta_X)
+      p_X[s,q,4] <- phi((theta_X[s,q,4]-X[s])/sigma_theta_X)-phi((theta_X[s,q,3]-X[s])/sigma_theta_X)
+      p_X[s,q,5] <- phi((theta_X[s,q,5]-X[s])/sigma_theta_X)-phi((theta_X[s,q,4]-X[s])/sigma_theta_X)
+      p_X[s,q,6] <- phi((theta_X[s,q,6]-X[s])/sigma_theta_X)-phi((theta_X[s,q,5]-X[s])/sigma_theta_X)
+      p_X[s,q,7] <- phi((theta_X[s,q,7]-X[s])/sigma_theta_X)-phi((theta_X[s,q,6]-X[s])/sigma_theta_X)
+      p_X[s,q,8] <- phi((theta_X[s,q,8]-X[s])/sigma_theta_X)-phi((theta_X[s,q,7]-X[s])/sigma_theta_X)
+      p_X[s,q,9] <- phi((theta_X[s,q,9]-X[s])/sigma_theta_X)-phi((theta_X[s,q,8]-X[s])/sigma_theta_X)
+      p_X[s,q,10] <- phi((theta_X[s,q,10]-X[s])/sigma_theta_X)-phi((theta_X[s,q,9]-X[s])/sigma_theta_X)
+      p_X[s,q,11] <- 1-phi((theta_X[s,q,10]-X[s])/sigma_theta_X)
+      
+      # simulate response on item using probabilities
+      surveyX[s,q] ~ dcat(p_X[s,q,])
+    }
+  }
+  
+  #---------- simulate survey M1 --------------------------------------------------
+  sigma_theta_M1 <- 1
+  
+  for (s in 1:nsubs) {
+    
+    for (q in 1:nq_M1) { 
+      
+      # simulate thresholds/cutoffs for responses
+      for (t in 1:(nr_M1-1)) { # define one fewer threshold than n responses  
+        # find thresholds on response scale
+        theta_M1[s,q,t] ~ dnorm((t+.5),sigma_theta_M1) 
+      }
+      
+      # generate probabilities for response categories from thresholded model
+      # See Kruschke Chapter 21 for model
+      # mean is underlying construct from mvnorm simulation above - i.e M1
+      p_M1[s,q,1] <- phi((theta_M1[s,q,1]-M1[s])/sigma_theta_M1)
+      p_M1[s,q,2] <- phi((theta_M1[s,q,2]-M1[s])/sigma_theta_M1)-phi((theta_M1[s,q,1]-M1[s])/sigma_theta_M1)
+      p_M1[s,q,3] <- phi((theta_M1[s,q,3]-M1[s])/sigma_theta_M1)-phi((theta_M1[s,q,2]-M1[s])/sigma_theta_M1)
+      p_M1[s,q,4] <- phi((theta_M1[s,q,4]-M1[s])/sigma_theta_M1)-phi((theta_M1[s,q,3]-M1[s])/sigma_theta_M1)
+      p_M1[s,q,5] <- 1-phi((theta_M1[s,q,4]-M1[s])/sigma_theta_M1)
+      
+      # simulate response on item using probabilities
+      surveyM1[s,q] ~ dcat(p_M1[s,q,])
+    }
+  }
+  
+  #---------- simulate survey M2 --------------------------------------------------
+  sigma_theta_M2 <- 1 #noise in threshold distances
+  
+  for (s in 1:nsubs) {
+    
+    for (q in 1:nq_M2) { 
+      
+      # simulate thresholds/cutoffs for responses
+      for (t in 1:(nr_M2-1)) { # define one fewer threshold than n questions  
+        # find thresholds on response scale
+        theta_M2[s,q,t] ~ dnorm((t+.5),sigma_theta_M2) 
+      }
+      
+      # generate probabilities for response categories from thresholded model
+      # See Kruschke Chapter 21 for model
+      # mean is underlying construct from mvnorm simulation above - i.e M2
+      p_M2[s,q,1] <- phi((theta_M2[s,q,1]-M2[s])/sigma_theta_M2)
+      p_M2[s,q,2] <- phi((theta_M2[s,q,2]-M2[s])/sigma_theta_M2)-phi((theta_M2[s,q,1]-M2[s])/sigma_theta_M2)
+      p_M2[s,q,3] <- phi((theta_M2[s,q,3]-M2[s])/sigma_theta_M2)-phi((theta_M2[s,q,2]-M2[s])/sigma_theta_M2)
+      p_M2[s,q,4] <- phi((theta_M2[s,q,4]-M2[s])/sigma_theta_M2)-phi((theta_M2[s,q,3]-M2[s])/sigma_theta_M2)
+      p_M2[s,q,5] <- 1-phi((theta_M2[s,q,4]-M2[s])/sigma_theta_M2)
+      
+      # simulate response on item using probabilities
+      surveyM2[s,q] ~ dcat(p_M2[s,q,])
+    }
+  }
+  
+  #---------- simulate survey M3 --------------------------------------------------
+  sigma_theta_M3 <- 1 #noise in threshold distances
+  
+  for (s in 1:nsubs) {
+    
+    for (q in 1:nq_M3) { 
+      
+      # simulate thresholds/cutoffs for responses
+      for (t in 1:(nr_M3-1)) { # define one fewer threshold than n questions  
+        # find thresholds on response scale
+        theta_M3[s,q,t] ~ dnorm((t+.5),sigma_theta_M3) 
+      }
+      
+      # generate probabilities for response categories from thresholded model
+      # See Kruschke Chapter 21 for model
+      # mean is underlying construct from mvnorm simulation above - i.e M3
+      p_M3[s,q,1] <- phi((theta_M3[s,q,1]-M3[s])/sigma_theta_M3)
+      p_M3[s,q,2] <- phi((theta_M3[s,q,2]-M3[s])/sigma_theta_M3)-phi((theta_M3[s,q,1]-M3[s])/sigma_theta_M3)
+      p_M3[s,q,3] <- phi((theta_M3[s,q,3]-M3[s])/sigma_theta_M3)-phi((theta_M3[s,q,2]-M3[s])/sigma_theta_M3)
+      p_M3[s,q,4] <- phi((theta_M3[s,q,4]-M3[s])/sigma_theta_M3)-phi((theta_M3[s,q,3]-M3[s])/sigma_theta_M3)
+      p_M3[s,q,5] <- 1-phi((theta_M3[s,q,4]-M3[s])/sigma_theta_M3)
+      
+      # simulate response on item using probabilities
+      surveyM3[s,q] ~ dcat(p_M3[s,q,])
+    }
+  }
+  
+  
+  #---------- simulate survey Y --------------------------------------------------
+  #---------- CONSTRUCT IN % BUT DATA IN ORDINAL CATEGORIES 1-12 -----------------
+  sigma_theta_Y <- 1 #noise in threshold distances - must be less
+  
+  #-Special for response options-
+  # response can be anything from < 50% to >50%, in intervals of %10
+  # here we will represent the data as proportions, and then have thresholds
+  # that match proportion intervals, rather than a Likert scale
+  #NB: LET'S TRY THIS AND IF THERE ARE PROBLEMS LOOK HERE FIRST
+  mu_theta_Y <- c(-.45,-.35,-.25,-.15,-.05,.05,.15,.25,.35,.45)
+  
+  for (s in 1:nsubs) {
+    
+    for (q in 1:nq_Y) { 
+      
+      # simulate thresholds/cutoffs for responses
+      for (t in 1:(nr_Y-1)) { # define one fewer threshold than n questions  
+        # find thresholds on response scale
+        theta_Y[s,q,t] ~ dnorm(mu_theta_Y[t],sigma_theta_Y) #note we have the mu from above 
+      }
+      
+      # generate probabilities for response categories from thresholded model
+      # See Kruschke Chapter 21 for model
+      # mean is underlying construct from mvnorm simulation above - i.e Y
+      p_Y[s,q,1] <- phi((theta_Y[s,q,1]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,2] <- phi((theta_Y[s,q,2]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,1]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,3] <- phi((theta_Y[s,q,3]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,2]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,4] <- phi((theta_Y[s,q,4]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,3]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,5] <- phi((theta_Y[s,q,5]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,4]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,6] <- phi((theta_Y[s,q,6]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,5]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,7] <- phi((theta_Y[s,q,7]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,6]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,8] <- phi((theta_Y[s,q,8]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,7]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,9] <- phi((theta_Y[s,q,9]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,8]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,10] <- phi((theta_Y[s,q,10]-Y[s])/sigma_theta_Y)-phi((theta_Y[s,q,9]-Y[s])/sigma_theta_Y)
+      p_Y[s,q,11] <- 1-phi((theta_Y[s,q,10]-Y[s])/sigma_theta_Y)
+      
+      # simulate response on item using probabilities
+      surveyY[s,q] ~ dcat(p_Y[s,q,])
+    }
+  }
+
+}
